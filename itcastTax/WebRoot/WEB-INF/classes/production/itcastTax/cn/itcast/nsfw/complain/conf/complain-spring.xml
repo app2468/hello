@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd 
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+    
+    <!-- 扫描service -->
+    <context:component-scan base-package="cn.itcast.nsfw.complain.service.impl"></context:component-scan>
+    
+    <bean id="complainDao" class="cn.itcast.nsfw.complain.dao.impl.ComplainDaoImpl" parent="baseDao"></bean>
+    
+    <!-- 制定任务详细信息-->
+    <bean id="autoDealComplainJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
+         <!-- 执行对象引用complainService -->
+        <property name="targetObject" ref="complainService"></property>
+        <property name="targetMethod" value="autoDeal"></property>
+        <property name="concurrent" value="false"></property> 
+         
+    </bean>
+    
+    <!-- 制定任务调度触发器 -->
+    <bean id="complainTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+         <property name="jobDetail" ref="autoDealComplainJobDetail"></property>
+          <!-- 0 0 2 L * ? 每月的最后一天的2点0分0秒执行一次 -->
+         	<property name="cronExpression" value="0 0 2 L * ?"></property>
+    </bean> 
+    
+    <!-- 制定任务调度工厂 -->
+   <bean id="complainSchedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+    	<property name="triggers">
+    		<list>
+    			<ref bean="complainTrigger"/>
+    		</list>
+    	</property>
+    </bean>
+    
+    
+</beans>
